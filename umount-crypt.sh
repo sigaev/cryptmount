@@ -14,6 +14,7 @@ if [[ $1 && -z $f && -d $ntd && `ls $ntd/` ]]; then
 	[[ $f =~ ^([^:]+):([^:]+):([^:]+):\((.+)\)$ ]] || \
 		{ echo error: No suitable loop or nbd device >&2; exit 1; }
 	d=${BASH_REMATCH[1]}
+	dp=$d
 	h=${BASH_REMATCH[2]}
 	p=${BASH_REMATCH[3]}
 	f=${BASH_REMATCH[4]}
@@ -21,13 +22,14 @@ else
 	[[ $f =~ ^([^:]+):.+\((.+)\)$ ]] || \
 		{ echo error: No suitable loop or nbd device >&2; exit 1; }
 	d=${BASH_REMATCH[1]}
+	dp="/dev/loop/?${d#/dev/loop/}"
 	h=
 	f=${BASH_REMATCH[2]}
 fi
 
 n=
 for i in /dev/mapper/crypt${h:+-net}* /dev/mapper/private${h:+-net}*; do
-	[[ -e $i ]] && cryptsetup status ${i#/dev/mapper/} | grep -q "device: *$d" && n=$i
+	[[ -e $i ]] && cryptsetup status ${i#/dev/mapper/} | grep -Eq "device: *$dp" && n=$i
 done
 
 e=0
