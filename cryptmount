@@ -18,7 +18,7 @@ stop() {
 	for i in /dev/mapper/crypt* /dev/mapper/private*; do
 		[[ -e $i ]] && { cryptsetup remove ${i#/dev/mapper/} || e=1; }
 	done
-	for i in `losetup -a | grep ^/dev/loop/ | cut -d: -f1`; do
+	for i in `losetup -a | grep ^/dev/loop | cut -d: -f1`; do
 		[[ 1 == `blockdev --getro $i` ]]; t=$?
 		((t)) && f=`losetup $i | sed 's/.*(\(.*\))/\1/'`
 		losetup -d $i || e=1
