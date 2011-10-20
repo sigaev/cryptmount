@@ -72,7 +72,7 @@ else
 	fi
 fi || { echo error: PARAMETER SECURITY CHECK FAILED >&2; exit 1; }
 # end of parameter check
-if [[ $f =~ [0-9]+$ ]]; then
+if [[ $f =~ [0-9]{2,}$ ]]; then
 	k=$((10#${BASH_REMATCH[0]}))
 	[[ -f $key ]] || { echo error: Key file \"$key\" does not exist >&2; exit 1; }
 fi
@@ -87,7 +87,7 @@ if [[ $h ]]; then
 	m=/mnt/crypt/n$l
 	n=crypt-net$l; [[ -z $k ]] && n=private-net$l
 else
-	for i in `losetup -a | grep ^/dev/loop/ | cut -d: -f1`; do
+	for i in `losetup -a | grep ^/dev/loop | cut -d: -f1`; do
 		[[ $i =~ [^0-9]$l$ ]] && ((l++))
 	done
 	d=/dev/loop$l
