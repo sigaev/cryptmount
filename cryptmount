@@ -1,0 +1,29 @@
+#!/sbin/runscript
+
+depend() {
+	need localmount
+}
+
+start() {
+	ebegin "Starting local encrypted volumes"
+	eend
+}
+
+stop() {
+	ebegin "Shutting down local encrypted volumes"
+	local a=`egrep '^/dev/mapper/(crypt|private)' /etc/mtab | cut -d\  -f2`
+	[[ $a ]] && fuser -TERM -km $a && sleep 2 && fuser -KILL -km $a && sleep 1
+	[[ -z $a ]] || umount -r $a
+	local e=$? f= t=
+	for i in /dev/mapper/crypt* /dev/mapper/private*; do
+		[[ -e $i ]] && { cryptsetup remove ${i#/dev/mapper/} || e=1; }
+	done
+	for i in `losetup -a | grep ^/dev/loop/ | cut -d: -f1`; do
+		[[ 1 == `blockdev --getro $i` ]]; t=$?
+		((t)) && f=`losetup $i | sed 's/.*(\(.*\))/\1/'`
+		losetup -d $i || e=1
+		((t)) && touch -c "$f"
+	done
+	losetup -a
+	eend $e "Failed to shut down local encrypted volumes"
+}

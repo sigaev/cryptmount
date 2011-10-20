@@ -1,0 +1,35 @@
+#!/sbin/runscript
+
+depend() {
+	need net cryptmount
+	use dns logger
+}
+
+start() {
+	ebegin "Starting remote encrypted volumes"
+	eend
+}
+
+stop() {
+	ebegin "Shutting down remote encrypted volumes"
+	local a=`egrep '^/dev/mapper/(crypt|private)-net' /etc/mtab | cut -d\  -f2`
+	[[ $a ]] && fuser -TERM -km $a && sleep 2 && fuser -KILL -km $a && sleep 1
+	[[ -z $a ]] || umount -r $a
+	local e=$? ntd=/var/run/mount-crypt rl=nbd_server.allow ld=
+	for i in /dev/mapper/crypt-net* /dev/mapper/private-net*; do
+		[[ -e $i ]] && { cryptsetup remove ${i#/dev/mapper/} || e=1; }
+	done
+	if [[ -d $ntd && `ls $ntd/` ]]; then
+		for i in `cat $ntd/* | cut -d: -f1`; do
+			nbd-client -d $i
+		done
+		local p=`grep -m1 '^port=' /usr/local/sbin/mount-crypt.sh`
+		[[ -e /etc/env.d/02localdomain ]] && ld="$(</etc/env.d/02localdomain) "
+		sleep 2
+		for i in `cat $ntd/* | cut -d: -f2 | sort -u`; do
+			su sigaev -c "${ld}ssh -x $i 'ps x | grep \[n]bd-server.${p:5:2} | awk {print\\\$1} | xargs -r kill'"
+		done
+	fi
+	rm -f $ntd/*
+	eend $e "Failed to shut down remote encrypted volumes"
+}
