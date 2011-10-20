@@ -57,23 +57,23 @@ k=
 # parameter check (SECURITY PRECAUTION)
 # NOTABENE: SCRIPT IS STILL VULNERABLE TO TOCTOU ATTACKS
 if [[ $h ]]; then
-	[[ lqcd == $h && $f =~ ^/data/sigaev/backup/[0-9]{5}$ ]] || \
-	[[ data == $h && $f =~ ^/home/sigaev/[0-9]{5}$ ]]
+	[[ lqcd == $h && $f =~ ^/data/sigaev/backup/[0-9]{5}~?$ ]] || \
+	[[ data == $h && $f =~ ^/home/sigaev/[0-9]{5}~?$ ]]
 else
 	if [[ $f =~ ^/home ]]; then
 		[[ $f =~ ^/home/sigaev/sandbox/\.private[0-9]?$ && \
 			-f $f && ! -h $f && ! -h /home/sigaev/sandbox && \
 			! -h /home/sigaev ]] || \
-		[[ $f =~ ^/home/sigaev/[0-9]{5}$ && \
+		[[ $f =~ ^/home/sigaev/[0-9]{5}~?$ && \
 			-f $f && ! -h $f && ! -h /home/sigaev ]]
 	else
-		[[ $f =~ ^/data/[0-9]{5}$ && \
+		[[ $f =~ ^/data/[0-9]{5}~?$ && \
 			-f $f && ! -h $f && sigaev == `ls -ld $f | awk '{print$3}'` ]]
 	fi
 fi || { echo error: PARAMETER SECURITY CHECK FAILED >&2; exit 1; }
 # end of parameter check
-if [[ $f =~ [0-9]{2,}$ ]]; then
-	k=$((10#${BASH_REMATCH[0]}))
+if [[ $f =~ ([0-9]{2,})~?$ ]]; then
+	k=$((10#${BASH_REMATCH[1]}))
 	[[ -f $key ]] || { echo error: Key file \"$key\" does not exist >&2; exit 1; }
 fi
 
