@@ -12,7 +12,7 @@
 key=/mnt/private/backup/key
 ntd=/var/run/mount-crypt
 rl=nbd_server.allow # remote allow list
-port=7437
+port=$((7437 + 4 * `hostname -i | cut -d. -f4`))
 
 nbd-kill () { su sigaev -c \
 	"ssh -x $1 'ps x | grep \[n]bd-server.$2 | awk {print\\\$1} | xargs -r kill'"; }
