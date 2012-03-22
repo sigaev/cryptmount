@@ -27,7 +27,7 @@ stop() {
 		[[ -e /etc/env.d/02localdomain ]] && ld="$(</etc/env.d/02localdomain) "
 		sleep 2
 		for i in `cat $ntd/* | cut -d: -f2 | sort -u`; do
-			su sigaev -c "${ld}ssh -x $i 'ps x | grep \[n]bd-server.${p:5:2} | awk {print\\\$1} | xargs -r kill'"
+			su sigaev -c "${ld}ssh -x $i 'ps x | grep -f<(for x in {${p:5:4}..$((7+${p:5:4}))}; do echo nbd-server \$x; done) | awk {print\\\$1} | xargs -r kill'"
 		done
 	fi
 	rm -f $ntd/*
