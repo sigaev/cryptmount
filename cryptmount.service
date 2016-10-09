@@ -1,0 +1,13 @@
+[Unit]
+Description=local crypt mounts
+Documentation=man:cryptsetup(8)
+DefaultDependencies=no
+ConditionVirtualization=!container
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStop=/usr/bin/bash /usr/local/sbin/cryptmount-stop.sh
+
+[Install]
+WantedBy=multi-user.target
